@@ -2,9 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
-import "video-react/dist/video-react.css";
 import { useLocation } from "react-router-dom";
-import { BigPlayButton, Player } from "video-react";
+import ReactPlayer from "react-player";
 
 import { markLectureAsComplete } from "../../../services/operations/courseDetailsAPI";
 import { updateCompletedLectures } from "../../../slices/viewCourseSlice";
@@ -173,7 +172,7 @@ const VideoDetails = () => {
   };
 
   return (
-    <div className="flex flex-col gap-5 text-white">
+    <div className="flex flex-col gap-5 text-white relative">
       {!videoData ? (
         <img
           src={previewSource}
@@ -181,23 +180,17 @@ const VideoDetails = () => {
           className="h-full w-full rounded-md object-cover"
         />
       ) : (
-        <Player
-          ref={playerRef}
-          aspectRatio="16:9"
-          playsInline
-          onEnded={() => setVideoEnded(true)}
-          src={videoData?.videoUrl}
-        >
-          <BigPlayButton position="center" />
-          {/* Render When Video Ends */}
+        <div className="relative">
+          <ReactPlayer
+            ref={playerRef}
+            url={videoData?.videoUrl}
+            controls
+            width="100%"
+            height="100%"
+            onEnded={() => setVideoEnded(true)}
+          />
           {videoEnded && (
-            <div
-              style={{
-                backgroundImage:
-                  "linear-gradient(to top, rgb(0, 0, 0), rgba(0,0,0,0.7), rgba(0,0,0,0.5), rgba(0,0,0,0.1)",
-              }}
-              className="full absolute inset-0 z-[100] grid h-full place-content-center font-inter"
-            >
+            <div className="absolute inset-0 z-[100] grid h-full place-content-center font-inter bg-black/70">
               {!completedLectures.includes(subSectionId) && (
                 <IconBtn
                   disabled={loading}
@@ -210,8 +203,7 @@ const VideoDetails = () => {
                 disabled={loading}
                 onclick={() => {
                   if (playerRef?.current) {
-                    // set the current time of the video to 0
-                    playerRef?.current?.seek(0);
+                    playerRef.current.seekTo(0); // reset video
                     setVideoEnded(false);
                   }
                 }}
@@ -240,7 +232,7 @@ const VideoDetails = () => {
               </div>
             </div>
           )}
-        </Player>
+        </div>
       )}
 
       <h1 className="mt-4 text-3xl font-semibold">{videoData?.title}</h1>
